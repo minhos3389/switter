@@ -3,6 +3,7 @@ import { initializeApp } from "@firebase/app";
 import { getFirestore} from '@firebase/firestore';
 // import * as firebase from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 // firebase cloud firestore nosql database
 // 제한사항이 존재. => NoSQL Collection 은 기본적으로 폴더, document는 문서로 이해.
 // create-react-app을 만든 사람들에 의해서 
@@ -27,4 +28,4 @@ const app = initializeApp(firebaseConfig);
 
 export const authService = getAuth(app);
 export const dbService = getFirestore(app);
-
+export const storageService = getStorage();

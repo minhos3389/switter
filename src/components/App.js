@@ -12,7 +12,7 @@ function App() {
   // const auth = fbase.auth();
   // console.log(authService.currentUser); // null (로그인하지 않은 경우 null)
   const [init, setInit] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // 이를통해서 유저의로그인 여부를 알 수 있습니다.
+  // const [isLoggedIn, setIsLoggedIn] = useState(false); // 이를통해서 유저의로그인 여부를 알 수 있습니다.
   // user가 누구인지 알려주는 상태
   const [userObj, setUserObj] = useState(null);
   useEffect(() => {
@@ -21,11 +21,11 @@ function App() {
     // 유저상태에 변화가 있을때 그것을 알아챔 로그아웃할때 발생, 계정생성할때 발생, firebase 초기화, 로그인할때 발생
     authService.onAuthStateChanged((user) => {
       if(user) {
-        setIsLoggedIn(true);
+        // setIsLoggedIn(true);
         // user가 바뀌면 이곳에 넣어줌. (user 정보를 넣어서 관리.)
         setUserObj(user);
       } else {
-        setIsLoggedIn(false);
+        // setIsLoggedIn(false);
       }
       setInit(true);
     });
@@ -37,8 +37,9 @@ function App() {
   // }, 2000);
   return (
     <>
-      {init ? <AppRouter isLoggedIn={isLoggedIn} userObj={userObj}/> : "Initializing..."}
-      <footer>&copy; {new Date().getFullYear()} Switter</footer>
+      {/* isLoggedIn에 props로 isLoggedIn 넣지않고 userObj를 propr로 넣어줘도 됨. (불리언형태로 넣으면 동일) */}
+      {init ? <AppRouter isLoggedIn={Boolean(userObj)} userObj={userObj}/> : "Initializing..."}
+      {/* <footer>&copy; {new Date().getFullYear()} Switter</footer> */}
     </>
   );
 }
