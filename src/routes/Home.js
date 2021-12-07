@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { dbService } from 'fbase';
+import { dbService, storage } from 'fbase';
+import { v4 as uuidv4 } from "uuid";
 // 실시간 트윗(스윗) query, onSnapshot, orderBy 사용
 // 이전 구현된 것은 새로고침을 해야 db 의 정보를 가져와 업데이트. 
 // 하지만 firestore db 는 realtimedb이기 때문에 이점을 살리기 위해 리얼타임으로 구현.
 import { collection, addDoc, serverTimestamp, getDocs, query, onSnapshot, orderBy,limit } from '@firebase/firestore';
-import { storageService } from 'fbase';
 import Sweet from 'components/Sweet';
-import { getDownloadURL, ref, uploadBytesResumable } from '@firebase/storage';
+import { getDownloadURL, getStorage, ref, uploadBytesResumable, uploadString } from '@firebase/storage';
 
 // export default () => <span>Home</span>;
 // App에서 Router로 보낸 userObj를 Router에서 또 Home으로 보내줌.
@@ -14,7 +14,7 @@ const Home = ({ userObj }) => {
   const [progress, setProgress] = useState(0);
   const [sweet, setSweet] = useState("");
   const [sweets, setSweets] = useState([]);
-  const [attachment, setAttachment] = useState("");
+  const [img, setImg] = useState("");
   // useEffect(() => {
   //   console.log(userObj);
   //   // firebase v9 문법
@@ -69,29 +69,40 @@ const Home = ({ userObj }) => {
   
   const handleOnSubmit = async (event) => {
     event.preventDefault();
+
+    // console.log('이벤트',event);
+    // const file = event.target;
+    
+    // const file = attachment;
+    // console.log('파일',file);
+    // uploadFiles(file);
+    uploadFiles(img);
+
     // 먼저 사진이 있다면 사진을 올리고 url을 받아서 sweet에 넣고 파일 url을 가진 sweet 생성.
     // firebase v9 문법
     // sweets 이라는 collection을 생성하고 
-  //   const docRef = await addDoc(collection(dbService, 'sweets'), {
-  //     // sweet 상태내용을 documents로 작성, 작성일자도 등록.
-  //     text: sweet, 
-  //     createAt: serverTimestamp(),
-  //     creatorId: userObj.uid,
-  //   });
+    // const docRef = await addDoc(collection(dbService, 'sweets'), {
+    //   // sweet 상태내용을 documents로 작성, 작성일자도 등록.
+    //   text: sweet, 
+    //   createAt: serverTimestamp(),
+    //   creatorId: userObj.uid,
+    // });
 
-  //   console.log('Document written with ID: ', docRef.id)
+    // console.log('Document written with ID: ', docRef.id)
 
-  //   // 다시 초기화
-  //   setSweet('');
+    // 다시 초기화
+    setSweet('');
   };
 
   // uploadFiles(file ) 
   // https://www.youtube.com/watch?v=pJ8LykeBDo4  
-  const uploadFiles = (file) => {
-    // 
+  const uploadFiles = ( file ) => {
     if(!file) return;
-    const storageRef = ref(storageService, `/files/${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    const storageRef = ref(storage, `${userObj.uid}/${uuidv4()}`);
+    const metadata = {
+      contentType: 'image/jpeg'
+    };
+    const uploadTask = uploadBytesResumable(storageRef, file, metadata);
 
     uploadTask.on("state_changed", (snapshot) => {
       const prog = Math.round( 
@@ -107,7 +118,7 @@ const Home = ({ userObj }) => {
     }
     );
   };
-
+  //
   
   const handleOnChange = (event) => {
     const {
@@ -124,6 +135,7 @@ const Home = ({ userObj }) => {
     // 여러개의 파일을 가질 수 있지만 , 우리의 input은 하나의 파일만 받도록 되어있음.
     // 그래서 input에 있는 모든 파일 중에 첫번째 파일만 받도록 설정.
     const theFile = files[0];
+    console.log('더파일', theFile);
     const reader = new FileReader();
     // 파일 로딩이 끝났을때 이벤트 읽어오는 부분
     reader.onloadend = (finishedEvent) => {
@@ -131,7 +143,8 @@ const Home = ({ userObj }) => {
       const { 
         currentTarget: { result },
       } = finishedEvent;
-      setAttachment(result);
+      setImg(result);
+      // console.log('result: ', result)
     } 
     // 데이터를 url로 읽어오는 부분
     reader.readAsDataURL(theFile);
@@ -139,7 +152,7 @@ const Home = ({ userObj }) => {
     // console.log(theFile);
     // fileReader API는 말 그대로 파일 이름을 읽는 것.
   }
-  const onClearAttachment = () => setAttachment(null);
+  const onClearImage = () => setImg(null);
   return (
     <div>
       <form onSubmit={handleOnSubmit}>
@@ -156,10 +169,10 @@ const Home = ({ userObj }) => {
           type="submit"
           value="Sweet" 
         />
-        {attachment && (
+        {img && (
           <div>
-            <img src={attachment} width="50px" height="50px" alt=""/> 
-            <button onClick={onClearAttachment}>Clear</button>
+            <img src={img} width="50px" height="50px" alt=""/> 
+            <button onClick={onClearImage}>Clear</button>
           </div>
         )}
       </form>
